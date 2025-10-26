@@ -1,17 +1,43 @@
-import { io } from "socket.io-client";
+import { Server } from "socket.io";
+import http from "http";
+import express from "express";
+import { ENV } from "./env.js";
+import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 
-export const socket = io("https://talkify-bfa4.onrender.com", {
-  withCredentials: true, // ✅ send JWT cookie for auth
+const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: [ENV.CLIENT_URL],
+    credentials: true,
+  },
 });
 
-socket.on("connect", () => {
-  console.log("Connected to Socket.IO server:", socket.id);
+// Store online users
+export const userSocketMap = {};
+
+// Function to get a user's socket ID
+export function getReceiverSocketId(userId) {
+  return userSocketMap[userId];
+}
+
+// Auth middleware
+io.use(socketAuthMiddleware);
+
+io.on("connection", (socket) => {
+  console.log("A user connected", socket.user.fullName);
+
+  const userId = socket.userId;
+  userSocketMap[userId] = socket.id;
+
+  io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected", socket.user.fullName);
+    delete userSocketMap[userId];
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+  });
 });
 
-socket.on("getOnlineUsers", (users) => {
-  console.log("Online users:", users);
-});
-
-socket.on("disconnect", () => {
-  console.log("Disconnected from Socket.IO server");
-});
+export { io, app, server };
