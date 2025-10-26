@@ -1,17 +1,16 @@
 import axios from "axios";
 
-// Detect environment and set the correct API base URL
 const BASE_URL =
   import.meta.env.MODE === "development"
-    ? "http://localhost:8000/api" // your local backend
-    : "https://talkify-bfa4.onrender.com/api"; // Render backend (for production)
+    ? "http://localhost:8000/api"      // Local backend
+    : "https://talkify-bfa4.onrender.com/api"; // Render backend
 
 export const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true,
+  withCredentials: true, // ✅ important for cookies
 });
 
-// Optional: Handle global errors more gracefully
+// Optional: global error logging
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
