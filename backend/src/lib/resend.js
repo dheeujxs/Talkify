@@ -3,7 +3,8 @@ import { ENV } from "./env.js";
 
 export const resendClient = new Resend(ENV.RESEND_API_KEY);
 
+// Use Resend’s test domain (no verification required)
 export const sender = {
-  email: ENV.EMAIL_FROM,
-  name: ENV.EMAIL_FROM_NAME,
+  email: "onboarding@resend.dev", // ✅ free test domain
+  name: "Talkify Team",
 };
